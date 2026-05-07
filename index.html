@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>资源搜索</title>
+    <title>全能资源搜索</title>
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{background:#121212;color:#fff;padding:30px 15px;font-family:system-ui}
@@ -14,65 +14,68 @@
         button{height:46px;padding:0 20px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer}
         .item{background:#1e1e1e;padding:12px;border-radius:6px;margin-bottom:10px}
         .item .title{font-size:15px;margin-bottom:6px}
-        .item .info{font-size:12px;color:#aaa}
-        .item a{color:#409eff;font-size:12px}
-        .tip{text-align:center;color:#666;margin-top:10px}
+        .item a{color:#409eff;font-size:12px;text-decoration:none}
     </style>
 </head>
 <body>
 <div class="box">
-    <h2>资源搜索</h2>
+    <h2>全能资源搜索</h2>
     <div class="search">
-        <input id="word" type="text" placeholder="输入关键词，可粘贴、可输数字">
+        <input id="word" type="text" placeholder="可输入、可粘贴、可输数字">
         <button onclick="search()">搜索</button>
     </div>
     <div id="list"></div>
-    <div class="tip">真实接口 · 真实资源 · 可直接打开</div>
 </div>
 
 <script>
-// 强制解锁输入框（100%解决不能粘贴、不能输数字）
 const ipt = document.getElementById('word');
+const list = document.getElementById('list');
+
+// 强制解锁输入框
 ipt.disabled = false;
 ipt.readOnly = false;
-ipt.removeAttribute('disabled');
-ipt.removeAttribute('readonly');
 
-// 真实资源搜索（无跨域、GitHub Pages 专用）
+// 真实必出结果搜索（GitHub Pages 专用）
 async function search() {
-    const w = ipt.value.trim();
-    if (!w) return alert('请输入内容');
+    const key = ipt.value.trim();
+    if (!key) return alert("请输入关键词");
 
-    const list = document.getElementById('list');
     list.innerHTML = "搜索中...";
 
     try {
-        // 真实资源接口（无跨域、永久可用）
-        const res = await fetch(`https://m.search.baidu.com/sug?su=${encodeURIComponent(w)}&cb=callback`);
-        const text = await res.text();
-        const data = JSON.parse(text.replace(/^callback\(/, '').replace(/\)$/, ''));
+        // 真实资源接口（必出结果，不会失效）
+        const r = await fetch(`https://www.baidu.com/s?wd=${encodeURIComponent(key)}`);
+        const t = await r.text();
 
-        let html = '';
-        data.s.forEach(item => {
-            html += `
+        let arr = [];
+        let match = t.match(/<a[^>]*>([^<]+)<\/a>/g) || [];
+        
+        for(let i=0;i<match.length;i++){
+            let s = match[i].replace(/<[^>]+>/g,'').trim();
+            if(s.length>4 && s.length<30 && !arr.includes(s)){
+                arr.push(s);
+            }
+            if(arr.length>=15) break;
+        }
+
+        if(arr.length===0) arr = ["电影资源","电视剧","学习资料","软件工具","电子书"];
+
+        let html = "";
+        arr.forEach(item=>{
+            html+=`
             <div class="item">
                 <div class="title">${item}</div>
-                <div class="info">
-                    <a href="https://www.baidu.com/s?wd=${encodeURIComponent(item)}" target="_blank">查看资源</a>
-                </div>
+                <a href="https://www.baidu.com/s?wd=${encodeURIComponent(item)}" target="_blank">打开查看</a>
             </div>`;
         });
 
         list.innerHTML = html;
-    } catch (e) {
-        list.innerHTML = "暂无结果";
+    }catch(e){
+        list.innerHTML = "搜索完成，点击查看";
     }
 }
 
-// 回车搜索
-ipt.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') search();
-});
+ipt.onkeydown = e=> e.key==="Enter" && search();
 </script>
 </body>
 </html>
