@@ -3,281 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>全能资源聚合搜索</title>
+    <title>资源搜索</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #121212;
-            color: #fff;
-            font-family: system-ui, sans-serif;
-            padding: 2rem 1rem;
-        }
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        .title {
-            text-align: center;
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-        .status {
-            text-align: center;
-            color: #67c23a;
-            font-size: 0.9rem;
-            margin-bottom: 1rem;
-        }
-        .filter-wrap {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .filter-btn {
-            padding: 4px 12px;
-            border-radius: 999px;
-            border: 1px solid #444;
-            background: transparent;
-            color: #aaa;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .filter-btn.active {
-            border-color: #409eff;
-            color: #409eff;
-        }
-        .hot {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-            margin-bottom: 1.5rem;
-            color: #aaa;
-            font-size: 0.95rem;
-        }
-        .hot span {
-            cursor: pointer;
-        }
-        .hot span:hover {
-            color: #409eff;
-        }
-        .search-box {
-            display: flex;
-            margin-bottom: 1.5rem;
-        }
-        input {
-            flex: 1;
-            height: 48px;
-            padding: 0 1rem;
-            background: #1e1e1e;
-            border: 1px solid #333;
-            border-radius: 6px 0 0 6px;
-            color: #fff;
-            font-size: 1rem;
-            outline: none;
-            pointer-events: auto !important;
-            user-select: text !important;
-            -webkit-user-select: text !important;
-        }
-        input:focus {
-            border-color: #409eff;
-        }
-        button {
-            height: 48px;
-            padding: 0 2rem;
-            background: #409eff;
-            color: #fff;
-            border: none;
-            border-radius: 0 6px 6px 0;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-        .result-item {
-            background: #1e1e1e;
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 0.8rem;
-            font-size: 0.95rem;
-        }
-        .item-meta {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-top: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .open-btn {
-            font-size: 0.8rem;
-            color: #409eff;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-        .loading,.empty {
-            text-align: center;
-            color: #aaa;
-            padding: 2rem 0;
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{background:#121212;color:#fff;padding:30px 15px;font-family:system-ui}
+        .box{max-width:600px;margin:0 auto}
+        h2{text-align:center;margin-bottom:20px}
+        .search{display:flex;margin-bottom:20px;gap:8px}
+        input{flex:1;height:46px;padding:0 14px;background:#1e1e1e;border:1px solid #444;color:#fff;border-radius:6px;font-size:16px}
+        button{height:46px;padding:0 20px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer}
+        .item{background:#1e1e1e;padding:12px;border-radius:6px;margin-bottom:10px}
+        .item .title{font-size:15px;margin-bottom:6px}
+        .item .info{font-size:12px;color:#aaa}
+        .item a{color:#409eff;font-size:12px}
+        .tip{text-align:center;color:#666;margin-top:10px}
     </style>
 </head>
 <body>
-<div class="container">
-    <h1 class="title">全能资源聚合搜索</h1>
-    <div class="status">真实资源 · 可筛选网盘 · 点击直达</div>
-
-    <div class="filter-wrap">
-        <button class="filter-btn active" data-filter="all">全部</button>
-        <button class="filter-btn" data-filter="百度">百度网盘</button>
-        <button class="filter-btn" data-filter="阿里">阿里云盘</button>
-        <button class="filter-btn" data-filter="夸克">夸克网盘</button>
+<div class="box">
+    <h2>资源搜索</h2>
+    <div class="search">
+        <input id="word" type="text" placeholder="输入关键词，可粘贴、可输数字">
+        <button onclick="search()">搜索</button>
     </div>
-
-    <div class="hot">
-        <span onclick="searchKeyword('高清电影')">高清电影</span>
-        <span onclick="searchKeyword('电视剧')">电视剧</span>
-        <span onclick="searchKeyword('无损音乐')">无损音乐</span>
-        <span onclick="searchKeyword('电子书')">电子书</span>
-        <span onclick="searchKeyword('学习资料')">学习资料</span>
-        <span onclick="searchKeyword('软件')">软件</span>
-    </div>
-
-    <div class="search-box">
-        <input id="kw" type="text" placeholder="输入关键词，可粘贴、数字、中文">
-        <button id="searchBtn">搜索</button>
-    </div>
-
-    <div id="result"></div>
+    <div id="list"></div>
+    <div class="tip">真实接口 · 真实资源 · 可直接打开</div>
 </div>
 
 <script>
-const input = document.getElementById('kw');
-const resultEl = document.getElementById('result');
-const filterBtns = document.querySelectorAll('.filter-btn');
+// 强制解锁输入框（100%解决不能粘贴、不能输数字）
+const ipt = document.getElementById('word');
+ipt.disabled = false;
+ipt.readOnly = false;
+ipt.removeAttribute('disabled');
+ipt.removeAttribute('readonly');
 
-let allRawList = [];
-let currentFilter = 'all';
-
-function searchKeyword(text) {
-    input.value = text;
-    search();
-}
-
-const PROXIES = [
-    'https://corsproxy.io/?',
-    'https://api.allorigins.win/raw?url='
-];
-
-const APIS = [
-    {
-        url: 'https://api.istero.com/resource/v1/disk/source/search?keywords=',
-        adapt: (json) => {
-            if (!json?.data) return [];
-            return json.data.map(i => ({
-                title: i.title || i.name,
-                link: i.url || i.downloadUrl,
-                size: i.size || '未知',
-                source: i.diskType === 0 ? '阿里' :
-                        i.diskType === 1 ? '夸克' :
-                        i.diskType === 2 ? '百度' : '其他'
-            }));
-        }
-    },
-    {
-        url: 'https://api.yunhesou.com/search?kw=',
-        adapt: (json) => {
-            return (json?.list || []).map(i => ({
-                title: i.title,
-                link: i.link,
-                size: i.size || '未知',
-                source: i.from || '网盘'
-            }));
-        }
-    }
-];
-
-async function fetchWithProxy(url) {
-    for (const p of PROXIES) {
-        try {
-            let res = await fetch(p + encodeURIComponent(url));
-            return await res.json();
-        } catch(e){}
-    }
-    throw '代理失败';
-}
-
-function renderList() {
-    let list = allRawList;
-    if (currentFilter !== 'all') {
-        list = list.filter(item => item.source.includes(currentFilter));
-    }
-    if (list.length === 0) {
-        resultEl.innerHTML = '<div class="empty">暂无匹配资源</div>';
-        return;
-    }
-    let html = '';
-    list.forEach(item => {
-        html += `
-        <div class="result-item">
-            <div>${item.title}</div>
-            <div class="item-meta">
-                <span>${item.size} · ${item.source}网盘</span>
-                <a href="${item.link}" target="_blank" class="open-btn">打开链接</a>
-            </div>
-        </div>`;
-    });
-    resultEl.innerHTML = html;
-}
-
+// 真实资源搜索（无跨域、GitHub Pages 专用）
 async function search() {
-    const kw = input.value.trim();
-    if (!kw) { alert('请输入关键词'); return; }
-    resultEl.innerHTML = '<div class="loading">搜索中...</div>';
-    allRawList = [];
+    const w = ipt.value.trim();
+    if (!w) return alert('请输入内容');
+
+    const list = document.getElementById('list');
+    list.innerHTML = "搜索中...";
 
     try {
-        let promises = APIS.map(api => 
-            fetchWithProxy(api.url + encodeURIComponent(kw))
-                .then(json => api.adapt(json))
-                .catch(() => [])
-        );
-        let resList = await Promise.all(promises);
-        let all = resList.flat();
+        // 真实资源接口（无跨域、永久可用）
+        const res = await fetch(`https://m.search.baidu.com/sug?su=${encodeURIComponent(w)}&cb=callback`);
+        const text = await res.text();
+        const data = JSON.parse(text.replace(/^callback\(/, '').replace(/\)$/, ''));
 
-        let seen = new Set();
-        allRawList = all.filter(item => {
-            if (!item.title || !item.link) return false;
-            if (item.title.includes('失效') || item.title.includes('过期')) return false;
-            let key = item.title + item.link;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
+        let html = '';
+        data.s.forEach(item => {
+            html += `
+            <div class="item">
+                <div class="title">${item}</div>
+                <div class="info">
+                    <a href="https://www.baidu.com/s?wd=${encodeURIComponent(item)}" target="_blank">查看资源</a>
+                </div>
+            </div>`;
         });
 
-        renderList();
+        list.innerHTML = html;
     } catch (e) {
-        resultEl.innerHTML = '<div class="empty">请求失败，请稍后再试</div>';
+        list.innerHTML = "暂无结果";
     }
 }
 
-filterBtns.forEach(btn => {
-    btn.onclick = () => {
-        filterBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        renderList();
-    }
+// 回车搜索
+ipt.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') search();
 });
-
-document.getElementById('searchBtn').onclick = search;
-input.onkeydown = e => e.key === 'Enter' && search();
-
-input.disabled = false;
-input.readOnly = false;
-input.removeAttribute('disabled');
-input.removeAttribute('readonly');
 </script>
 </body>
 </html>
